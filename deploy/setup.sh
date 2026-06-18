@@ -51,7 +51,7 @@ sudo mkdir -p /var/www/jerney-devops
 sudo chown -R $USER:$USER /var/www/jerney-devops
 
 # Copy project files (assumes you've transferred them to ~/Jerney-devops)
-cp -r ~/Jerney-devops/* /var/www/jerney-devops/
+cp -r ~/jerney-devops/* /var/www/jerney-devops/
 
 # --- Install backend dependencies ---
 echo "📦 Installing backend dependencies..."
