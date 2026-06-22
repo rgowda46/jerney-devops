@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jerney-ingress
+  namespace: jerney
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - host: jerney.local
+
+      http:
+        paths:
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jerney-frontend
+                port:
+                  number: 80
+
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: jerney-backend
+                port:
+                  number: 5000
