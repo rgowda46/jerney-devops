@@ -41,7 +41,7 @@ spec:
 
       containers:
         - name: backend
-          image: rohith4693/jerney-backend:v1
+          image: rohith4693/jerney-backend:v2
           imagePullPolicy: IfNotPresent
 
           ports:
