@@ -1,10 +1,36 @@
-# 🛤️ Jerney — Blog Platform
+# 🚀 Jerney – Cloud-Native Blog Platform
 
-A Gen-Z vibe blog platform built with a 3-tier architecture — React frontend, Node.js backend, and PostgreSQL database.
+A full-stack blog platform built with a modern three-tier architecture and deployed on AWS using Docker, Kubernetes, Terraform, Amazon EKS, and Route 53.
 
-![Tech Stack](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
-![Tech Stack](https://img.shields.io/badge/Node.js-20-339933?style=flat-square&logo=node.js)
-![Tech Stack](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=flat-square&logo=node.js)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes)
+![Terraform](https://img.shields.io/badge/Terraform-844FBA?style=flat-square&logo=terraform)
+![Amazon EKS](https://img.shields.io/badge/Amazon-EKS-FF9900?style=flat-square&logo=amazonaws)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazonaws)
+
+---
+
+## 📌 Overview
+
+Jerney is a cloud-native blog platform demonstrating an end-to-end DevOps workflow—from local development to a production-ready deployment on Amazon Web Services.
+
+The project includes:
+
+- React frontend
+- Node.js & Express backend
+- PostgreSQL database
+- Docker & Docker Compose
+- Kubernetes
+- Amazon EKS
+- Terraform
+- Amazon ECR
+- AWS Load Balancer Controller
+- Amazon EBS CSI Driver
+- Amazon Route 53
+- Helm
 
 ---
 
@@ -18,105 +44,141 @@ A Gen-Z vibe blog platform built with a 3-tier architecture — React frontend, 
 
 ---
 
-## ✨ Features
+# ✨ Features
 
-- 📝 Create blog posts with emoji vibes
-- ✏️ Edit your existing posts
-- 🗑️ Delete posts you're not feeling anymore
+- 📝 Create blog posts
+- ✏️ Edit posts
+- 🗑️ Delete posts
 - 💬 Comment on posts
-- 🎨 Gen-Z dark UI with glassmorphism and gradients
+- 🎨 Modern React UI
+- ⚡ REST API
+- 🐘 PostgreSQL persistence
+- 🐳 Dockerized services
+- ☸️ Kubernetes deployments
+- 🌍 Custom domain support
 
-## 🏗️ Architecture
+---
 
+# 🏗️ Architecture
+
+```text
+                   Internet
+                       │
+               Amazon Route 53
+                       │
+        AWS Application Load Balancer
+                       │
+             Kubernetes Ingress
+                       │
+        ┌──────────────┴──────────────┐
+        ▼                             ▼
+ React Frontend Pods         Express Backend Pods
+                                      │
+                                      ▼
+                             PostgreSQL Database
+                                      │
+                                      ▼
+                          Amazon EBS Persistent Volume
 ```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Frontend   │────▶│   Backend    │────▶│  PostgreSQL   │
-│   (React +   │◀────│  (Node.js +  │◀────│              │
-│    Nginx)    │     │   Express)   │     │              │
-│   Port 80    │     │  Port 5000   │     │  Port 5432   │
-└──────────────┘     └──────────────┘     └──────────────┘
+
+---
+
+# 🚀 DevOps Workflow
+
+```text
+Local Development
+        │
+        ▼
+Dockerize Application
+        │
+        ▼
+Docker Compose
+        │
+        ▼
+Build Docker Images
+        │
+        ▼
+Push Images to Amazon ECR
+        │
+        ▼
+Provision AWS Infrastructure using Terraform
+        │
+        ▼
+Create Amazon EKS Cluster
+        │
+        ▼
+Deploy Kubernetes Resources
+        │
+        ▼
+Install AWS Load Balancer Controller
+        │
+        ▼
+Create ALB Ingress
+        │
+        ▼
+Configure Amazon Route 53
+        │
+        ▼
+Application Available via Custom Domain
 ```
 
-## 📁 Project Structure
+---
 
-```
-Jerney/
-├── frontend/                # React (Vite) frontend
-│   ├── src/                 # React components & pages
-│   ├── nginx.conf           # Nginx config for serving the app
-│   └── package.json
-├── backend/                 # Node.js Express API
-│   ├── src/                 # Routes, DB connection
-│   └── package.json
-├── deploy/                  # EC2 deployment scripts
-│   ├── setup.sh             # One-click EC2 setup script
-│   └── jerney-nginx.conf    # Nginx reverse proxy config
+# ⚙️ Technology Stack
+
+## Application
+
+- React
+- Node.js
+- Express
+- PostgreSQL
+
+## DevOps
+
+- Docker
+- Docker Compose
+- Kubernetes
+- Helm
+- Terraform
+
+## AWS Services
+
+- Amazon EC2
+- Amazon VPC
+- Amazon ECR
+- Amazon EKS
+- Amazon EBS
+- AWS Load Balancer Controller
+- Amazon Route 53
+- IAM
+- CloudWatch
+
+---
+
+# 📁 Repository Structure
+
+```text
+.
+├── backend/
+├── frontend/
+├── deploy/
+├── docker/
+├── k8s/
+│   ├── eks/
+│   ├── helm/
+│   └── minikube/
+├── terraform/
+├── screenshots/
+├── docs/
+├── JOURNAL.md
 └── README.md
 ```
 
 ---
 
-## 🚀 Deploy on AWS EC2
+# 🚀 Deployment Options
 
-### Prerequisites
-
-- An AWS EC2 instance running **Ubuntu 22.04+**
-- Security Group allowing inbound traffic on ports **22** (SSH) and **80** (HTTP)
-- SSH access to the instance
-
-### Step 1: Transfer the Code to EC2
-
-```bash
-# From your local machine
-scp -r -i your-key.pem ./Jerney ubuntu@<EC2_PUBLIC_IP>:~/Jerney
-```
-
-### Step 2: SSH into the Instance
-
-```bash
-ssh -i your-key.pem ubuntu@<EC2_PUBLIC_IP>
-```
-
-### Step 3: Run the Setup Script
-
-The `deploy/setup.sh` script installs everything and configures the app automatically:
-
-```bash
-cd ~/Jerney
-chmod +x deploy/setup.sh
-./deploy/setup.sh
-```
-
-This script will:
-1. Update system packages
-2. Install **Node.js 20.x**, **PostgreSQL 16**, **Nginx**, and **PM2**
-3. Create the database and user
-4. Install backend dependencies
-5. Build the React frontend
-6. Configure Nginx as a reverse proxy
-7. Start the backend with PM2 (auto-restarts on crash/reboot)
-
-### Step 4: Access the App
-
-Open your browser and go to:
-
-```
-http://<EC2_PUBLIC_IP>
-```
-
-### Useful Commands
-
-```bash
-pm2 status                          # Check backend status
-pm2 logs                            # View backend logs
-pm2 restart all                     # Restart backend
-sudo systemctl restart nginx        # Restart Nginx
-sudo -u postgres psql -d jerney_db  # Connect to database
-```
-
----
-
-## 🧑‍💻 Local Development (Without Docker)
+## Local Development
 
 ### Prerequisites
 
@@ -129,7 +191,6 @@ sudo -u postgres psql -d jerney_db  # Connect to database
 cd backend
 npm install
 
-# Create a .env file (or export these variables)
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_USER=jerney_user
@@ -148,17 +209,56 @@ npm install
 npm run dev
 ```
 
-The Vite dev server starts on `http://localhost:3000` and proxies `/api` requests to the backend at `http://localhost:5000`.
+The Vite development server runs on:
+
+```
+http://localhost:3000
+```
 
 ---
 
-## 📡 API Endpoints
+## Docker
+
+The project includes Dockerfiles for the frontend and backend, along with Docker Compose for local multi-container deployment.
+
+```bash
+docker compose up --build
+```
+
+---
+
+## Kubernetes
+
+Kubernetes manifests are available for:
+
+- Minikube
+- Amazon EKS
+- Helm Charts
+
+---
+
+## Infrastructure as Code
+
+Terraform provisions:
+
+- VPC
+- Public & Private Subnets
+- Internet Gateway
+- NAT Gateway
+- Route Tables
+- Security Groups
+- Amazon EKS Cluster
+- Managed Node Group
+
+---
+
+# 📡 REST API
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
+|---------|----------|-------------|
+| GET | `/api/health` | Health Check |
 | GET | `/api/posts` | Get all posts |
-| GET | `/api/posts/:id` | Get single post with comments |
+| GET | `/api/posts/:id` | Get a single post |
 | POST | `/api/posts` | Create a new post |
 | PUT | `/api/posts/:id` | Update a post |
 | DELETE | `/api/posts/:id` | Delete a post |
@@ -168,13 +268,62 @@ The Vite dev server starts on `http://localhost:3000` and proxies `/api` request
 
 ---
 
-## 🌿 Branch Strategy
+# 📖 Documentation
 
-| Branch | Purpose |
-|--------|---------|
-| `main` | Source code + EC2 bare-metal deployment |
-| `devops` | Full DevSecOps — Docker, Kubernetes (EKS), Terraform, CI/CD pipeline, security scanning |
+A complete engineering journal documenting every phase of the project is available in:
+
+```text
+JOURNAL.md
+```
+
+The journal covers:
+
+- Local deployment on EC2
+- Docker
+- Docker Compose
+- Kubernetes
+- Terraform
+- Amazon EKS
+- AWS Load Balancer Controller
+- Route 53
+- Troubleshooting
+- Lessons learned
 
 ---
 
-Built with 💜 by the Jerney team. No cap, this blog platform hits different. 🛤️
+# 📸 Screenshots
+
+The repository contains screenshots demonstrating:
+
+- Local deployment
+- Docker Compose
+- Terraform provisioning
+- Amazon EKS Cluster
+- Kubernetes Resources
+- AWS Application Load Balancer
+- Route 53 Configuration
+- Final deployed application
+
+---
+
+# ⚠️ Live Demo
+
+The application was successfully deployed and validated on AWS using a custom domain.
+
+To avoid unnecessary cloud infrastructure costs, the live environment has been intentionally torn down after validation.
+
+---
+
+# 🌿 Branch Strategy
+
+| Branch | Purpose |
+|---------|---------|
+| `main` | Source code with EC2 deployment |
+| `terraform` | Infrastructure as Code development |
+| `k8s` | Kubernetes manifests |
+| `helm` | Helm chart development |
+| `devops` | Complete integrated cloud-native deployment |
+
+---
+
+Built with 💜 by **Rohith Gowda**.
