@@ -10,7 +10,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate # Recreate strategy is used for stateful applications like databases to avoid data corruption during updates.
+    type: Recreate # Required for RWO volumes
   selector:
     matchLabels:
       app.kubernetes.io/name: jerney-db
@@ -21,7 +21,7 @@ spec:
         app.kubernetes.io/part-of: jerney
         app.kubernetes.io/component: database
     spec:
-      # Security: Don't automount service account token (DB doesnt need to access the Kubernetes API)
+      # Security: don't automount service account token (DB doesn't need K8s API)
       automountServiceAccountToken: false
       tolerations:
         - key: "karpenter.sh/disrupted"
@@ -33,7 +33,7 @@ spec:
           ports:
             - containerPort: 5432
               protocol: TCP
-          envfrom:
+          envFrom:
             - secretRef:
                 name: jerney-db-secret
           volumeMounts:
@@ -42,18 +42,16 @@ spec:
               subPath: pgdata
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              cpu: 250m
+              memory: 256Mi
             limits:
-              memory: "512Mi"
-              cpu: "500m"
-
-      # Security Context
+              cpu: 500m
+              memory: 512Mi
+          # Security context
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false # postgres image runs as non-root user by default, so readOnlyRootFilesystem can be set to true if needed.
-            runAsNonRoot: false # postgres image runs as non-root user by default, so this can be set to true if needed.
-
+            readOnlyRootFilesystem: false # Postgres needs write access
+            runAsNonRoot: false            # Postgres image runs initdb as root then drops
           livenessProbe:
             exec:
               command: ["pg_isready", "-U", "jerney_user", "-d", "jerney_db"]
@@ -62,7 +60,7 @@ spec:
             timeoutSeconds: 5
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "jerney_user", "-d", "jerney_db"]   
+              command: ["pg_isready", "-U", "jerney_user", "-d", "jerney_db"]
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3
