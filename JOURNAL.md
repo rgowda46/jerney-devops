@@ -1,130 +1,82 @@
 # 📘 Jerney Engineering Journal
 
-> This journal documents the complete journey of building, containerizing, and deploying the **Jerney** blog platform from a locally hosted application to a cloud-native deployment on Amazon Web Services using Docker, Kubernetes, Terraform, Amazon EKS, and Route 53.
+This journal documents the engineering journey of deploying the **Jerney** blogging platform from a traditional server deployment to a cloud-native application running on Amazon EKS.
+
+Rather than explaining the project architecture (covered in the README), this document focuses on the implementation process, challenges encountered, and lessons learned throughout the deployment.
 
 ---
 
-# Project Overview
-
-## Objective
-
-The goal of this project was to gain hands-on experience with modern DevOps practices by progressively deploying a full-stack application through multiple environments.
-
-The deployment journey followed these stages:
+# Deployment Journey
 
 ```text
-Local Development
-        │
-        ▼
+Local Deployment
+      │
+      ▼
 AWS EC2
-        │
-        ▼
+      │
+      ▼
 Docker
-        │
-        ▼
+      │
+      ▼
 Docker Compose
-        │
-        ▼
+      │
+      ▼
 Kubernetes (Minikube)
-        │
-        ▼
+      │
+      ▼
 Terraform
-        │
-        ▼
+      │
+      ▼
 Amazon EKS
-        │
-        ▼
+      │
+      ▼
 AWS Load Balancer Controller
-        │
-        ▼
+      │
+      ▼
 Amazon Route 53
-        │
-        ▼
-Custom Domain
+      │
+      ▼
+jerney.rohith-gowda.online
 ```
 
 ---
 
-# Technology Stack
-
-## Application
-
-- React
-- Node.js
-- Express
-- PostgreSQL
-
-## DevOps
-
-- Docker
-- Docker Compose
-- Kubernetes
-- Helm
-- Terraform
-
-## AWS
-
-- Amazon EC2
-- Amazon VPC
-- Amazon EKS
-- Amazon ECR
-- Amazon EBS
-- AWS Load Balancer Controller
-- Amazon Route 53
-- IAM
-
----
-
-# 1. Run Application on AWS EC2
-
-## Architecture
-
-```text
-React Frontend
-      │
-      ▼
-Node.js Backend
-      │
-      ▼
-PostgreSQL
-```
+# 1. Deploy Application on AWS EC2
 
 ## Objective
 
-Deploy the application on a Linux server without containers.
+Deploy the application on a Linux server without containerization to understand the complete application stack and its runtime dependencies.
 
-## What I Did
+## Implementation
 
-- Cloned the repository into an EC2 instance
+- Cloned the repository onto an EC2 instance
 - Installed Node.js
 - Installed PostgreSQL
 - Installed Nginx
 - Installed PM2
-- Created the PostgreSQL database
-- Created the database user
+- Created the application database
 - Configured environment variables
 - Started the backend using PM2
 - Configured Nginx as a reverse proxy
-- Accessed the application using the EC2 public IP
 
 ---
 
-## Problems Faced
+## Challenges
 
-### Backend Not Starting
+### PostgreSQL Authentication Failed
 
-#### Error
+**Error**
 
 ```text
 SASL: SCRAM-SERVER-FIRST-MESSAGE:
 client password must be a string
 ```
 
-#### Root Cause
+**Cause**
 
-Database environment variables were missing.
+Database environment variables were not configured.
 
-#### Solution
+**Solution**
 
 Configured:
 
@@ -136,99 +88,37 @@ Configured:
 
 ---
 
-### Nginx Returning 500
+### Nginx Returned HTTP 500
 
-#### Root Cause
+**Cause**
 
-Backend process was not running.
+Backend process failed to start.
 
-#### Solution
+**Solution**
 
 - Checked PM2 logs
-- Fixed backend configuration
-- Restarted PM2
+- Corrected backend configuration
+- Restarted the PM2 process
 
 ---
 
-## Outcome
+## Result
 
-✅ Successfully deployed the application on an EC2 instance.
+The application was successfully deployed on EC2 and accessible through the instance's public IP.
 
-![Local Deployment](screenshots/01-local-deployment.png)
+![EC2 Deployment](screenshots/01-local-deployment.png)
 
 ---
 
-# 2. Dockerize Backend
+# 2. Containerize the Backend
 
 ## Objective
 
-Containerize the Express backend.
+Package the Express backend into a Docker image.
 
-## Dockerfile
+## Implementation
 
-```dockerfile
-FROM node:20-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install
-
-COPY . .
-
-EXPOSE 5000
-
-CMD ["node", "src/index.js"]
-```
-
----
-
-## Problems Faced
-
-### Docker Permission Denied
-
-#### Error
-
-```text
-permission denied while trying to connect to docker.sock
-```
-
-#### Solution
-
-```bash
-sudo usermod -aG docker ubuntu
-```
-
-Reconnect to the SSH session.
-
----
-
-### npm ci Failed
-
-#### Error
-
-```text
-npm ci requires package-lock.json
-```
-
-#### Root Cause
-
-The project did not contain a package-lock.json file.
-
-#### Solution
-
-```bash
-npm install
-```
-
-This generated the required lock file.
-
----
-
-## Outcome
-
-Successfully built the backend image.
+Created a Dockerfile based on the official Node.js Alpine image and built the backend image.
 
 ```bash
 docker build -t jerney-backend .
@@ -236,50 +126,84 @@ docker build -t jerney-backend .
 
 ---
 
-# 3. Dockerize Frontend
+## Challenges
 
-## Objective
+### Docker Permission Denied
 
-Containerize the React frontend.
-
-## Dockerfile
-
-A multi-stage Docker build was used.
+**Error**
 
 ```text
-Build Stage
-      │
-npm run build
-      │
-      ▼
-Nginx Stage
-      │
-Serve Static Files
+permission denied while trying to connect to docker.sock
 ```
+
+**Solution**
+
+```bash
+sudo usermod -aG docker ubuntu
+```
+
+Reconnected to the SSH session.
 
 ---
 
-## Problems Faced
+### npm ci Failed
 
-### Container Exited Immediately
+**Cause**
 
-#### Error
+The project did not include a `package-lock.json` file.
+
+**Solution**
+
+```bash
+npm install
+```
+
+Generated the required lock file before rebuilding the image.
+
+---
+
+## Result
+
+Successfully built the backend container image.
+
+---
+
+# 3. Containerize the Frontend
+
+## Objective
+
+Package the React application into a Docker image.
+
+## Implementation
+
+Implemented a multi-stage Docker build:
+
+- Build stage using Node.js
+- Runtime stage using Nginx
+
+---
+
+## Challenges
+
+### Frontend Container Exited Immediately
+
+**Error**
 
 ```text
 host not found in upstream "jerney-backend"
 ```
 
-#### Root Cause
+**Cause**
 
-The backend container was unavailable because Docker networking had not yet been configured.
+The frontend attempted to connect to a backend container that did not yet exist on a shared Docker network.
 
-#### Solution
+**Solution**
 
-Deploy both containers using Docker Compose.
+Moved both services into Docker Compose.
 
 ---
 
-## Outcome
+## Result
 
 Successfully built the frontend image.
 
@@ -291,60 +215,32 @@ docker build -t jerney-frontend .
 
 # 4. Docker Compose
 
-## Architecture
-
-```text
-Frontend Container
-        │
-        ▼
-Backend Container
-        │
-        ▼
-PostgreSQL Container
-```
-
----
-
 ## Objective
 
-Run the complete application using multiple Docker containers.
+Run the frontend, backend, and PostgreSQL containers as a single application.
 
----
+## Implementation
 
-## What I Did
+Configured Docker Compose to manage:
 
-Created:
-
-```text
-docker-compose.yml
-```
-
-Configured:
-
-- Frontend service
-- Backend service
-- PostgreSQL service
+- Frontend
+- Backend
+- PostgreSQL
+- Shared Docker network
 - Persistent volume
-- Docker network
 - Environment variables
 
 ---
 
-## Problems Faced
+## Challenges
 
 ### Port 5432 Already in Use
 
-#### Error
-
-```text
-failed to bind host port 5432
-```
-
-#### Root Cause
+**Cause**
 
 PostgreSQL was already running on the EC2 host.
 
-#### Solution
+**Solution**
 
 ```bash
 sudo systemctl stop postgresql
@@ -354,17 +250,11 @@ sudo systemctl stop postgresql
 
 ### Port 80 Already in Use
 
-#### Error
+**Cause**
 
-```text
-failed to bind host port 80
-```
+Nginx was already running.
 
-#### Root Cause
-
-Nginx was already running on the EC2 host.
-
-#### Solution
+**Solution**
 
 ```bash
 sudo systemctl stop nginx
@@ -372,31 +262,27 @@ sudo systemctl stop nginx
 
 ---
 
-### Backend Restarting Continuously
+### Backend Could Not Connect to PostgreSQL
 
-#### Error
+**Error**
 
 ```text
 ECONNREFUSED 127.0.0.1:5432
 ```
 
-#### Investigation
+**Investigation**
 
 ```bash
 docker inspect jerney-backend
 ```
 
-Found:
+The container did not receive the database hostname.
 
-```text
-DB_HOST missing
-```
+**Cause**
 
-#### Root Cause
+`DB_HOST` was missing from `docker-compose.yml`.
 
-Forgot to configure the database hostname inside docker-compose.yml.
-
-#### Solution
+**Solution**
 
 ```yaml
 DB_HOST: db
@@ -406,9 +292,9 @@ Recreated the containers.
 
 ---
 
-## Biggest Learning
+## Key Learning
 
-Containers communicate using the Docker service name.
+Containers communicate using service names instead of localhost.
 
 Incorrect:
 
@@ -424,7 +310,7 @@ DB_HOST=db
 
 ---
 
-## Outcome
+## Result
 
 Successfully started:
 
@@ -432,89 +318,48 @@ Successfully started:
 - Backend
 - Frontend
 
-The application became accessible using the EC2 public IP.
+The application became accessible through the EC2 public IP.
 
 ![Docker Deployment](screenshots/02-docker-deployment.png)
+
 ![Docker Compose](screenshots/03-docker-compose.png)
 
 ---
 
-# 5. Verify Data Persistence
+# 5. Verify Persistent Storage
 
 ## Objective
 
-Verify that PostgreSQL data persists even after containers are recreated.
+Confirm that PostgreSQL data remains available after containers are recreated.
 
----
+## Test
 
-## Test Performed
-
-Created a blog post.
-
-```text
-First Post
-```
-
-Stopped the application:
+Created a sample blog post and restarted the application.
 
 ```bash
 docker compose down
-```
 
-Started it again:
-
-```bash
 docker compose up -d
 ```
 
----
-
 ## Result
 
-The blog post was still present after recreating the containers.
+The data remained intact after restarting the containers, confirming that Docker volumes persisted the PostgreSQL database.
 
 ---
 
-## Learning
-
-```text
-Container Removed
-       │
-       ▼
-Volume Remains
-       │
-       ▼
-Database Remains
-       │
-       ▼
-Data Persists
-```
-
----
-
-## Outcome
-
-Docker volumes successfully provided persistent storage.
-
-![Docker Deployment](screenshots/02-docker-deployment.png)
-
----
-
-# 6. Provision AWS Infrastructure using Terraform
+# 6. Provision AWS Infrastructure with Terraform
 
 ## Objective
 
-Provision the complete AWS infrastructure using Infrastructure as Code.
+Provision the networking infrastructure and Amazon EKS cluster using Infrastructure as Code.
 
----
-
-## Resources Created
+## Implementation
 
 Terraform was used to provision:
 
-- Amazon VPC
-- Public Subnets
-- Private Subnets
+- VPC
+- Public and Private Subnets
 - Internet Gateway
 - NAT Gateway
 - Route Tables
@@ -522,9 +367,7 @@ Terraform was used to provision:
 - Amazon EKS Cluster
 - Managed Node Group
 
----
-
-## Commands Used
+Deployment commands:
 
 ```bash
 terraform init
@@ -534,50 +377,36 @@ terraform plan
 terraform apply
 ```
 
----
+## Key Learning
 
-## Learning
+Using Terraform made the infrastructure reproducible, version-controlled, and easy to recreate or destroy when required.
 
-Using Terraform allows cloud infrastructure to be:
+## Result
 
-- Version controlled
-- Reproducible
-- Automated
-- Easily destroyed when no longer required
-
----
-
-## Outcome
-
-AWS infrastructure successfully provisioned.
+Successfully provisioned the networking infrastructure and Amazon EKS cluster.
 
 ![Terraform Apply](screenshots/04-terraform-apply.png)
 
 ---
-
-# 7. Deploy Application to Amazon EKS
+# 7. Deploy the Application to Amazon EKS
 
 ## Objective
 
-Deploy the application to a managed Kubernetes cluster.
+Deploy the containerized application to a managed Kubernetes cluster on AWS.
 
----
+## Implementation
 
-## What I Did
-
-Created Kubernetes manifests for:
+Applied Kubernetes manifests for:
 
 - Namespace
 - Secrets
 - StorageClass
-- Persistent Volume Claim
+- PersistentVolumeClaim
 - PostgreSQL Deployment
 - Backend Deployment
 - Frontend Deployment
 - ClusterIP Services
-- Network Policy
-
-Applied the manifests using:
+- Ingress
 
 ```bash
 kubectl apply -f .
@@ -587,57 +416,51 @@ kubectl apply -f .
 
 ## Verification
 
-Verified deployment using:
+Verified that all workloads were running correctly.
 
 ```bash
 kubectl get pods -n jerney
 
 kubectl get svc -n jerney
 
-kubectl get pvc -n jerney
+kubectl get ingress -n jerney
 
-kubectl get nodes
+kubectl get pvc -n jerney
 ```
 
----
-
-## Outcome
-
-All application components were successfully deployed and reached the **Running** state.
+All Pods entered the **Running** state and Kubernetes successfully created the application resources.
 
 ![Kubernetes Resources](screenshots/05-k8s-resources-alb.png)
 
 ---
 
-# 8. Configure AWS Load Balancer Controller
+# 8. Configure the AWS Load Balancer Controller
 
 ## Objective
 
-Expose the Kubernetes application to the internet using an AWS Application Load Balancer.
+Expose the Kubernetes application through an AWS Application Load Balancer.
+
+## Implementation
+
+Completed the following configuration:
+
+- Associated the IAM OIDC Provider
+- Created the IAM Policy
+- Created an IAM Role for Service Accounts (IRSA)
+- Installed the AWS Load Balancer Controller using Helm
+- Applied the Kubernetes Ingress resource
 
 ---
 
-## What I Did
+## Challenge
 
-- Associated IAM OIDC Provider with the EKS cluster
-- Created IAM Policy
-- Created IAM Service Account (IRSA)
-- Installed AWS Load Balancer Controller using Helm
-- Created Kubernetes Ingress
+### Application Load Balancer Not Created
 
----
+The Ingress resource remained in a pending state and no Application Load Balancer was provisioned.
 
-## Problems Faced
+### Cause
 
-### Load Balancer Not Being Created
-
-#### Root Cause
-
-The IAM Role trusted the OIDC provider from a previous EKS cluster.
-
-As a result, the AWS Load Balancer Controller could not assume the IAM role.
-
----
+The IAM Role trusted an OIDC provider from a previous EKS cluster. Because the cluster had been recreated, the OIDC provider changed and the Load Balancer Controller could no longer assume the IAM role.
 
 ### Solution
 
@@ -645,90 +468,76 @@ As a result, the AWS Load Balancer Controller could not assume the IAM role.
 - Recreated the IAM Service Account using `eksctl`
 - Reinstalled the AWS Load Balancer Controller
 
-After recreating the service account, the Application Load Balancer was successfully provisioned.
+After reinstalling the controller, the Application Load Balancer was successfully provisioned.
 
 ---
 
-## Learning
+## Result
 
-The IAM trust policy must match the OIDC provider associated with the current EKS cluster.
+Successfully exposed the application through an AWS Application Load Balancer.
 
-Recreating the cluster changes the OIDC provider, so existing IAM roles may no longer work.
-
----
-
-## Outcome
-
-Application successfully exposed using an AWS Application Load Balancer.
-
-![ALB Resources](screenshots/08-load-balancer-deployment.png)
+![AWS Load Balancer](screenshots/08-load-balancer-deployment.png)
 
 ---
 
-# 9. Configure Custom Domain
+# 9. Configure the Custom Domain
 
 ## Objective
 
-Access the application using a custom domain.
+Access the application using a custom domain instead of the generated ALB DNS name.
+
+## Implementation
+
+Configured:
+
+- Amazon Route 53 Hosted Zone
+- Alias A Record pointing to the Application Load Balancer
+- GoDaddy nameservers
 
 ---
 
-## What I Did
-
-- Purchased a domain from GoDaddy
-- Created a Route 53 Hosted Zone
-- Created an Alias A Record pointing to the ALB
-- Updated GoDaddy nameservers
-- Waited for DNS propagation
-
----
-
-## Problems Faced
+## Challenge
 
 ### Domain Not Resolving
 
-#### Root Cause
+Initially, the custom domain did not resolve.
 
-GoDaddy was still using its default nameservers.
+### Cause
 
----
+GoDaddy continued using its default nameservers instead of the Route 53 Hosted Zone.
 
 ### Solution
 
-Updated the domain nameservers to the Route 53 nameservers.
-
-After DNS propagation completed, the domain resolved correctly.
+Updated the domain nameservers in GoDaddy and waited for DNS propagation.
 
 ---
 
-## Outcome
+## Result
 
-Application successfully accessible at:
+The application became accessible at:
 
 ```text
-http://rohith-gowda.online
+http://jerney.rohith-gowda.online
 ```
 
 ![Custom Domain](screenshots/07-custom-domain.png)
 
 ---
 
-# 10. Persistent Storage in Kubernetes
+# 10. Configure Persistent Storage
 
 ## Objective
 
-Persist PostgreSQL data using Amazon EBS.
+Persist PostgreSQL data within Kubernetes.
 
----
+## Implementation
 
-## What I Did
-
-Created:
+Configured:
 
 - StorageClass
-- Persistent Volume Claim
+- PersistentVolumeClaim
 
-Mounted the persistent volume to PostgreSQL.
+Mounted the persistent volume to the PostgreSQL Deployment.
 
 ---
 
@@ -742,251 +551,70 @@ kubectl get pvc
 kubectl get nodes
 ```
 
----
+The PersistentVolumeClaim was successfully bound and attached to PostgreSQL.
 
-## Outcome
-
-Persistent storage successfully attached to PostgreSQL.
-
-![StorageClass & PVC](screenshots/06-storageclass-pvc-nodes.png)
+![Persistent Storage](screenshots/06-storageclass-pvc-nodes.png)
 
 ---
 
-# Challenges Faced Throughout the Project
+# Major Challenges
 
 | Challenge | Resolution |
 |------------|------------|
 | PostgreSQL authentication failed | Configured the required database environment variables |
-| Docker permission denied | Added the user to the Docker group |
-| Missing package-lock.json | Generated the lock file using `npm install` |
-| Frontend could not communicate with backend | Used Docker Compose networking |
-| Backend could not connect to PostgreSQL | Changed `DB_HOST` from `localhost` to the Docker service name |
-| Port 5432 already in use | Stopped the PostgreSQL service running on the EC2 host |
-| Port 80 already in use | Stopped the Nginx service running on the EC2 host |
-| Load Balancer was not created | Recreated the IAM Service Account with the correct OIDC provider |
-| Ingress remained in Pending state | Verified AWS Load Balancer Controller installation and IAM permissions |
-| ALB Target Group unhealthy | Verified service ports, container ports, and readiness of application pods |
-| Custom domain not resolving | Updated GoDaddy nameservers to Route 53 nameservers and waited for DNS propagation |
-| Pods unable to start | Investigated pod logs using `kubectl logs` and fixed configuration issues |
-| Kubernetes resources not created | Verified namespace and reapplied manifests |
-
----
-
-# Commands Learned
-
-## Docker
-
-```bash
-docker build
-
-docker images
-
-docker ps
-
-docker ps -a
-
-docker logs
-
-docker exec -it
-
-docker inspect
-
-docker network ls
-
-docker volume ls
-
-docker compose up -d
-
-docker compose down
-
-docker compose logs
-```
-
----
-
-## Kubernetes
-
-```bash
-kubectl apply -f
-
-kubectl get pods
-
-kubectl get svc
-
-kubectl get ingress
-
-kubectl get pvc
-
-kubectl get storageclass
-
-kubectl get nodes
-
-kubectl describe pod
-
-kubectl logs
-
-kubectl delete
-
-kubectl rollout restart deployment
-```
-
----
-
-## Terraform
-
-```bash
-terraform init
-
-terraform fmt
-
-terraform validate
-
-terraform plan
-
-terraform apply
-
-terraform destroy
-```
-
----
-
-## Helm
-
-```bash
-helm repo add
-
-helm repo update
-
-helm install
-
-helm list
-
-helm uninstall
-```
-
----
-
-## AWS CLI
-
-```bash
-aws configure
-
-aws eks update-kubeconfig
-
-aws ecr get-login-password
-```
-
----
-
-# Final Architecture
-
-```text
-                    Internet
-                        │
-                        ▼
-              rohith-gowda.online
-                        │
-                        ▼
-                 Amazon Route 53
-                        │
-                        ▼
-         AWS Application Load Balancer
-                        │
-                        ▼
-             Kubernetes Ingress (ALB)
-                        │
-        ┌───────────────┴───────────────┐
-        ▼                               ▼
- React Frontend Pods           Express Backend Pods
-                                        │
-                                        ▼
-                               PostgreSQL Pod
-                                        │
-                                        ▼
-                      Amazon EBS Persistent Volume
-```
+| Docker socket permission denied | Added the user to the Docker group |
+| Docker networking issues | Used Docker Compose service names instead of `localhost` |
+| Port conflicts on EC2 | Stopped host PostgreSQL and Nginx services |
+| ALB not provisioning | Recreated the IAM Service Account with the correct OIDC provider |
+| Custom domain not resolving | Updated GoDaddy nameservers to Route 53 |
 
 ---
 
 # Key Learnings
 
-Throughout this project I learned how a modern cloud-native application is built and deployed using DevOps tools and AWS services.
+This project provided practical experience with the complete lifecycle of deploying a cloud-native application.
 
-Some of the most valuable lessons include:
+Key takeaways include:
 
-- Building and containerizing applications with Docker
-- Managing multi-container applications using Docker Compose
-- Understanding Docker networking and service discovery
-- Persisting application data using Docker volumes
+- Containerizing applications using Docker
+- Managing multi-container applications with Docker Compose
 - Writing Infrastructure as Code using Terraform
-- Deploying applications to Kubernetes
-- Managing workloads using Deployments, Services, Ingress, and Persistent Volumes
+- Deploying workloads to Kubernetes
 - Provisioning and managing an Amazon EKS cluster
 - Configuring IAM Roles for Service Accounts (IRSA)
-- Installing and configuring the AWS Load Balancer Controller
-- Exposing Kubernetes applications through an Application Load Balancer
-- Configuring DNS using Amazon Route 53
-- Troubleshooting Kubernetes workloads using logs, events, and resource descriptions
-- Understanding the relationship between networking, IAM, storage, and Kubernetes resources in AWS
+- Installing the AWS Load Balancer Controller
+- Exposing Kubernetes applications using Ingress and an Application Load Balancer
+- Configuring DNS with Amazon Route 53
+- Troubleshooting Kubernetes, networking, IAM, and cloud infrastructure
 
 ---
 
 # Final Outcome
 
-Successfully designed, containerized, and deployed a full-stack blogging application using modern DevOps practices.
+The Jerney blogging platform was successfully deployed from a traditional EC2-based setup to a fully containerized cloud-native architecture running on Amazon EKS.
 
-## Technologies Used
-
-### Frontend
-
-- React
-
-### Backend
-
-- Node.js
-- Express
-
-### Database
-
-- PostgreSQL
-
-### Containerization
+The final deployment included:
 
 - Docker
 - Docker Compose
-
-### Container Orchestration
-
 - Kubernetes
-- Helm
-
-### Infrastructure as Code
-
-- Terraform
-
-### Cloud Platform
-
-- Amazon Web Services (AWS)
-
-### AWS Services
-
-- Amazon EC2
-- Amazon ECR
 - Amazon EKS
-- Amazon VPC
-- Amazon EBS
-- IAM
+- Terraform
+- Amazon ECR
 - AWS Load Balancer Controller
 - Amazon Route 53
+- Amazon EBS Persistent Storage
+
+The application was successfully validated using:
+
+```text
+http://jerney.rohith-gowda.online
+```
+
+After validation, the AWS infrastructure was intentionally destroyed using Terraform to avoid unnecessary cloud costs.
 
 ---
 
-The application was successfully deployed and validated on AWS using a custom domain:
+# Conclusion
 
-```text
-http://rohith-gowda.online
-```
-
-After successful validation, the cloud infrastructure was intentionally destroyed using Terraform to avoid unnecessary AWS costs.
-
-This project provided practical experience in deploying, managing, and troubleshooting cloud-native applications using industry-standard DevOps tools and workflows.
+This project significantly improved my understanding of modern DevOps practices by providing hands-on experience with containerization, Kubernetes, Infrastructure as Code, and AWS cloud services. Beyond deploying the application, the troubleshooting process—resolving Docker networking issues, Kubernetes configuration problems, IAM permissions, Load Balancer provisioning, and DNS propagation—provided valuable insight into operating cloud-native applications in production-like environments.
