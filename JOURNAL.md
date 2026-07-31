@@ -434,6 +434,7 @@ Successfully started:
 
 The application became accessible using the EC2 public IP.
 
+![Docker Deployment](screenshots/02-docker-deployment.png)
 ![Docker Compose](screenshots/03-docker-compose.png)
 
 ---
@@ -660,7 +661,7 @@ Recreating the cluster changes the OIDC provider, so existing IAM roles may no l
 
 Application successfully exposed using an AWS Application Load Balancer.
 
-![ALB Resources](screenshots/05-k8s-resources-alb.png)
+![ALB Resources](screenshots/08-load-balancer-deployment.png)
 
 ---
 
