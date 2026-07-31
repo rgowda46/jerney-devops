@@ -1,42 +1,16 @@
-# 🚀 Jerney – Cloud-Native Blog Platform
+# 🛤️ Jerney — Blog Platform
 
-A full-stack blog platform built with a modern three-tier architecture and deployed on AWS using Docker, Kubernetes, Terraform, Amazon EKS, and Route 53.
+A modern full-stack blog platform built with a three-tier architecture featuring a React frontend, Node.js backend, and PostgreSQL database.
 
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
 ![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=flat-square&logo=node.js)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes)
-![Terraform](https://img.shields.io/badge/Terraform-844FBA?style=flat-square&logo=terraform)
-![Amazon EKS](https://img.shields.io/badge/Amazon-EKS-FF9900?style=flat-square&logo=amazonaws)
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazonaws)
-
----
-
-## 📌 Overview
-
-Jerney is a cloud-native blog platform demonstrating an end-to-end DevOps workflow—from local development to a production-ready deployment on Amazon Web Services.
-
-The project includes:
-
-- React frontend
-- Node.js & Express backend
-- PostgreSQL database
-- Docker & Docker Compose
-- Kubernetes
-- Amazon EKS
-- Terraform
-- Amazon ECR
-- AWS Load Balancer Controller
-- Amazon EBS CSI Driver
-- Amazon Route 53
-- Helm
 
 ---
 
 > [!IMPORTANT]
 > **Looking for the full DevSecOps implementation?**
-> Switch to the [`devops`](../../tree/devops) branch for Docker, Kubernetes (EKS Auto Mode), Terraform, CI/CD with GitHub Actions, container security scanning, and more.
+> Switch to the [`devops`](../../tree/devops) branch for Docker, Kubernetes (Amazon EKS), Terraform, AWS Load Balancer Controller, Amazon Route 53, deployment documentation, screenshots, and more.
 >
 > ```bash
 > git checkout devops
@@ -44,141 +18,106 @@ The project includes:
 
 ---
 
-# ✨ Features
+## ✨ Features
 
 - 📝 Create blog posts
-- ✏️ Edit posts
+- ✏️ Edit your existing posts
 - 🗑️ Delete posts
 - 💬 Comment on posts
-- 🎨 Modern React UI
-- ⚡ REST API
-- 🐘 PostgreSQL persistence
-- 🐳 Dockerized services
-- ☸️ Kubernetes deployments
-- 🌍 Custom domain support
+- 🎨 Modern responsive UI
 
 ---
 
-# 🏗️ Architecture
+## 🏗️ Architecture
 
 ```text
-                   Internet
-                       │
-               Amazon Route 53
-                       │
-        AWS Application Load Balancer
-                       │
-             Kubernetes Ingress
-                       │
-        ┌──────────────┴──────────────┐
-        ▼                             ▼
- React Frontend Pods         Express Backend Pods
-                                      │
-                                      ▼
-                             PostgreSQL Database
-                                      │
-                                      ▼
-                          Amazon EBS Persistent Volume
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Frontend   │────▶│   Backend    │────▶│ PostgreSQL   │
+│   (React)    │◀────│ (Node.js +   │◀────│   Database   │
+│              │     │  Express)    │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘
 ```
 
 ---
 
-# 🚀 DevOps Workflow
+## 📁 Project Structure
 
 ```text
-Local Development
-        │
-        ▼
-Dockerize Application
-        │
-        ▼
-Docker Compose
-        │
-        ▼
-Build Docker Images
-        │
-        ▼
-Push Images to Amazon ECR
-        │
-        ▼
-Provision AWS Infrastructure using Terraform
-        │
-        ▼
-Create Amazon EKS Cluster
-        │
-        ▼
-Deploy Kubernetes Resources
-        │
-        ▼
-Install AWS Load Balancer Controller
-        │
-        ▼
-Create ALB Ingress
-        │
-        ▼
-Configure Amazon Route 53
-        │
-        ▼
-Application Available via Custom Domain
-```
-
----
-
-# ⚙️ Technology Stack
-
-## Application
-
-- React
-- Node.js
-- Express
-- PostgreSQL
-
-## DevOps
-
-- Docker
-- Docker Compose
-- Kubernetes
-- Helm
-- Terraform
-
-## AWS Services
-
-- Amazon EC2
-- Amazon VPC
-- Amazon ECR
-- Amazon EKS
-- Amazon EBS
-- AWS Load Balancer Controller
-- Amazon Route 53
-- IAM
-- CloudWatch
-
----
-
-# 📁 Repository Structure
-
-```text
-.
-├── backend/
-├── frontend/
-├── deploy/
-├── docker/
-├── k8s/
-│   ├── eks/
-│   ├── helm/
-│   └── minikube/
-├── terraform/
-├── screenshots/
-├── docs/
-├── JOURNAL.md
+Jerney/
+├── frontend/                # React frontend
+├── backend/                 # Node.js Express API
+├── deploy/                  # EC2 deployment scripts
+├── screenshots/             # Project screenshots
+├── JOURNAL.md               # Engineering journal
 └── README.md
 ```
 
 ---
 
-# 🚀 Deployment Options
+# 🚀 Deploy on AWS EC2
 
-## Local Development
+## Prerequisites
+
+- AWS EC2 instance running **Ubuntu 22.04+**
+- Security Group allowing inbound traffic on ports **22** (SSH) and **80** (HTTP)
+- SSH access to the instance
+
+## Step 1: Transfer the Code to EC2
+
+```bash
+scp -r -i your-key.pem ./Jerney ubuntu@<EC2_PUBLIC_IP>:~/Jerney
+```
+
+## Step 2: SSH into the Instance
+
+```bash
+ssh -i your-key.pem ubuntu@<EC2_PUBLIC_IP>
+```
+
+## Step 3: Run the Setup Script
+
+The `deploy/setup.sh` script installs everything and configures the application automatically.
+
+```bash
+cd ~/Jerney
+chmod +x deploy/setup.sh
+./deploy/setup.sh
+```
+
+The script will:
+
+1. Update system packages
+2. Install Node.js
+3. Install PostgreSQL
+4. Install Nginx
+5. Install PM2
+6. Create the database
+7. Install backend dependencies
+8. Build the React frontend
+9. Configure Nginx as a reverse proxy
+10. Start the backend with PM2
+
+## Step 4: Access the Application
+
+Open your browser:
+
+```text
+http://<EC2_PUBLIC_IP>
+```
+
+### Useful Commands
+
+```bash
+pm2 status
+pm2 logs
+pm2 restart all
+sudo systemctl restart nginx
+sudo -u postgres psql -d jerney_db
+```
+
+---
+
+## 🧑‍💻 Local Development
 
 ### Prerequisites
 
@@ -211,54 +150,19 @@ npm run dev
 
 The Vite development server runs on:
 
-```
+```text
 http://localhost:3000
 ```
 
 ---
 
-## Docker
-
-The project includes Dockerfiles for the frontend and backend, along with Docker Compose for local multi-container deployment.
-
-```bash
-docker compose up --build
-```
-
----
-
-## Kubernetes
-
-Kubernetes manifests are available for:
-
-- Minikube
-- Amazon EKS
-- Helm Charts
-
----
-
-## Infrastructure as Code
-
-Terraform provisions:
-
-- VPC
-- Public & Private Subnets
-- Internet Gateway
-- NAT Gateway
-- Route Tables
-- Security Groups
-- Amazon EKS Cluster
-- Managed Node Group
-
----
-
-# 📡 REST API
+## 📡 API Endpoints
 
 | Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/api/health` | Health Check |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
 | GET | `/api/posts` | Get all posts |
-| GET | `/api/posts/:id` | Get a single post |
+| GET | `/api/posts/:id` | Get single post with comments |
 | POST | `/api/posts` | Create a new post |
 | PUT | `/api/posts/:id` | Update a post |
 | DELETE | `/api/posts/:id` | Delete a post |
@@ -268,64 +172,34 @@ Terraform provisions:
 
 ---
 
-# 📖 Documentation
+## 📖 Documentation
 
-A complete engineering journal documenting every phase of the project is available in:
+The complete engineering journey is documented in **`JOURNAL.md`**, covering:
 
-```text
-JOURNAL.md
-```
-
-The journal covers:
-
-- Local deployment on EC2
+- EC2 deployment
 - Docker
 - Docker Compose
-- Kubernetes
 - Terraform
+- Kubernetes
 - Amazon EKS
 - AWS Load Balancer Controller
-- Route 53
-- Troubleshooting
-- Lessons learned
+- Amazon Route 53
+- Challenges and lessons learned
+
+Project screenshots are available in the `screenshots/` directory.
 
 ---
 
-# 📸 Screenshots
-
-The repository contains screenshots demonstrating:
-
-- Local deployment
-- Docker Compose
-- Terraform provisioning
-- Amazon EKS Cluster
-- Kubernetes Resources
-- AWS Application Load Balancer
-- Route 53 Configuration
-- Final deployed application
-
----
-
-# ⚠️ Live Demo
-
-The application was successfully deployed and validated on AWS using a custom domain.
-
-To avoid unnecessary cloud infrastructure costs, the live environment has been intentionally torn down after validation.
-
----
-
----
-
-# 🌿 Branch Strategy
+## 🌿 Branch Strategy
 
 | Branch | Purpose |
-|---------|---------|
-| `main` | Application source code with bare-metal deployment on AWS EC2 using Nginx, PM2, and PostgreSQL |
-| `docker` | Containerized application using Docker and Docker Compose |
-| `terraform` | Infrastructure as Code (IaC) for provisioning AWS resources including VPC, EKS, and networking |
-| `k8s` | Kubernetes deployment manifests for Minikube and Amazon EKS, including Helm charts |
-| `devops` | Complete end-to-end cloud-native solution integrating Docker, Terraform, Kubernetes, Amazon EKS, ALB Ingress, Route 53, and all application code |
+|--------|---------|
+| `main` | Application source code with EC2 deployment |
+| `docker` | Dockerized application using Docker and Docker Compose |
+| `terraform` | AWS infrastructure provisioned with Terraform |
+| `k8s` | Kubernetes deployment manifests for Minikube and Amazon EKS |
+| `devops` | Complete DevSecOps implementation integrating Docker, Terraform, Kubernetes, Amazon EKS, AWS Load Balancer Controller, Route 53, and the application |
 
 ---
 
-Built with 💜 by **Rohith Gowda**.
+Built with ❤️ by **Rohith Gowda**.
