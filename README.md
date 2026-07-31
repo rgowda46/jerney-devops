@@ -314,15 +314,17 @@ To avoid unnecessary cloud infrastructure costs, the live environment has been i
 
 ---
 
+---
+
 # 🌿 Branch Strategy
 
 | Branch | Purpose |
 |---------|---------|
-| `main` | Source code with EC2 deployment |
-| `terraform` | Infrastructure as Code development |
-| `k8s` | Kubernetes manifests |
-| `helm` | Helm chart development |
-| `devops` | Complete integrated cloud-native deployment |
+| `main` | Application source code with bare-metal deployment on AWS EC2 using Nginx, PM2, and PostgreSQL |
+| `docker` | Containerized application using Docker and Docker Compose |
+| `terraform` | Infrastructure as Code (IaC) for provisioning AWS resources including VPC, EKS, and networking |
+| `k8s` | Kubernetes deployment manifests for Minikube and Amazon EKS, including Helm charts |
+| `devops` | Complete end-to-end cloud-native solution integrating Docker, Terraform, Kubernetes, Amazon EKS, ALB Ingress, Route 53, and all application code |
 
 ---
 
