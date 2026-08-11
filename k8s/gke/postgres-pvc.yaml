@@ -1,0 +1,18 @@
+# ---- PersistentVolumeClaim for PostgreSQL ----
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jerney-db-pvc
+  namespace: jerney
+  labels:
+    app.kubernetes.io/part-of: jerney
+    app.kubernetes.io/component: database
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      storage: 10Gi
