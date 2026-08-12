@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: jerney-certificate
+  namespace: jerney
+spec:
+  domains:
+    - jerney.rohith-gowda.online

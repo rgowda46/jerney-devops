@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: frontend
 
 spec:
-  type: LoadBalancer
+  type: ClusterIP
 
   selector:
     app.kubernetes.io/name: jerney-frontend
