@@ -4,12 +4,11 @@ metadata:
   name: jerney-ingress
   namespace: jerney
   annotations:
+    kubernetes.io/ingress.class: "gce"
     kubernetes.io/ingress.global-static-ip-name: "jerney-ingress-ip"
     networking.gke.io/managed-certificates: "jerney-certificate"
 
 spec:
-  ingressClassName: gce
-
   rules:
     - host: jerney.rohith-gowda.online
       http:
